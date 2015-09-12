@@ -96,14 +96,30 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	
 	public void SetThirdPerson(bool bEnabled) {
 		SetVariantInt(bEnabled ? 1 : 0);
-        AcceptEntityInput(this.Index, "SetForcedTauntCam");
+		AcceptEntityInput(this.Index, "SetForcedTauntCam");
 	}
 	
-	// TODO method or special prop entry to unset prop?
-	// TODO destructors??
 	public void Reset() {
 		__bClientIsPropped[this.Index] = false;
 		__bClientIsPropLocked[this.Index] = false;
+		__bClientIsDisarmed[this.Index] = false;
+	}
+	
+	public void Unprop() {
+		bool wasDisarmed = this.IsDisarmed;
+		
+		this.Reset();
+		
+		if (this.Index > 0 && IsClientInGame(this.Index)) {
+			this.SetCustomModel("");
+			this.SetThirdPerson(false);
+			
+			if (wasDisarmed) {
+				int health = this.Health;
+				TF2_RegeneratePlayer(this.Index);
+				this.Health = health;
+			}
+		}
 	}
 };
 

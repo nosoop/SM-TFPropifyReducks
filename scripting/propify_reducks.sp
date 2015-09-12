@@ -8,7 +8,7 @@
 
 #include "propify2/methodmaps.sp"
 
-#define PLUGIN_VERSION "0.0.2"
+#define PLUGIN_VERSION "0.0.3"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -30,6 +30,7 @@ public void OnPluginStart() {
 	g_PropList.AddPropToList("Computer Cart", "models/props_well/computer_cart01.mdl");
 	g_PropList.AddPropToList("Skull Sign", "models/props_mining/sign001.mdl");
 	
+	HookEvent("player_spawn", Event_PlayerSpawn_Post, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_PlayerInventoryApplication_Post, EventHookMode_Post);
 	
 	// Test prop command for fine-tuning prop behavior
@@ -38,17 +39,28 @@ public void OnPluginStart() {
 	// Late loads, as always.
 	for (int i = MaxClients; i > 0; --i) {
 		if (IsClientInGame(i)) {
-			OnClientConnected(i);
+			OnClientPutInServer(i);
 		}
 	}
 }
 
+/**
+ * Hook for `post_inventory_application` to restrip propped players of weapons as necessary
+ */
 public void Event_PlayerInventoryApplication_Post(Event event, const char[] name, bool dontBroadcast) {
 	PropifyTFPlayer player = g_proppablePlayers[GetClientOfUserId(event.GetInt("userid"))];
 	
 	if (player != null && player.IsPropped && player.IsDisarmed) {
 		player.RemoveWeapons();
 	}
+}
+
+/**
+ * Hook for `player_spawn` to unset player prop (which also regrants the weapons removed by `post_inventory_application`).
+ */
+public void Event_PlayerSpawn_Post(Event event, const char[] name, bool dontBroadcast) {
+	PropifyTFPlayer player = g_proppablePlayers[GetClientOfUserId(event.GetInt("userid"))];
+	player.Unprop();
 }
 
 // Test prop command
@@ -68,14 +80,25 @@ public void OnMapStart() {
 	/* Do fancy prop loading stuff */
 }
 
-public void OnClientConnected(int iClient) {
+public void OnClientPutInServer(int iClient) {
 	g_proppablePlayers[iClient] = new PropifyTFPlayer(iClient);
 }
 
 public void OnClientDisconnect(int iClient) {
-	g_proppablePlayers[iClient].Reset();
+	PropifyTFPlayer player = g_proppablePlayers[iClient];
+	if (player.IsPropped) {
+		player.Unprop();
+	} else {
+		player.Reset();
+	}
+	g_proppablePlayers[iClient] = null;
 }
 
 public void OnPluginEnd() {
+	for (int i = MaxClients; i > 0; --i) {
+		if (IsClientInGame(i)) {
+			OnClientDisconnect(i);
+		}
+	}
 	g_PropList.Clear();
 }
