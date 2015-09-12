@@ -35,7 +35,6 @@ public void OnPluginStart() {
 	
 	// Test prop command for fine-tuning prop behavior
 	RegAdminCmd("sm_prop", ConCmd_PropPlayer, ADMFLAG_ROOT);
-	RegAdminCmd("sm_unprop", ConCmd_UnpropPlayer, ADMFLAG_ROOT);
 	
 	// Late loads, as always.
 	for (int i = MaxClients; i > 0; --i) {
@@ -67,19 +66,17 @@ public void Event_PlayerSpawn_Post(Event event, const char[] name, bool dontBroa
 // Test prop command
 public Action ConCmd_PropPlayer(int iClient, int nArgs) {
 	PropifyTFPlayer player = g_proppablePlayers[iClient];
-	PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
 	
-	player.SetProp(entry, PROPIFYFLAG_NO_WEAPONS);
-	delete entry;
-	
-	player.ThirdPerson = true;
-	
-	return Plugin_Handled;
-}
-
-public Action ConCmd_UnpropPlayer(int iClient, int nArgs) {
-	PropifyTFPlayer player = g_proppablePlayers[iClient];
-	player.Unprop();
+	if (!player.IsPropped) {
+		PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
+		
+		player.SetProp(entry, PROPIFYFLAG_NO_WEAPONS);
+		delete entry;
+		
+		player.ThirdPerson = true;
+	} else {
+		player.Unprop();
+	}
 	
 	return Plugin_Handled;
 }
