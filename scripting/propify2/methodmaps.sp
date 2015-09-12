@@ -9,10 +9,11 @@
 #define PROPENTRY_PATH				"m_szPath"
 
 #define PROPIFYFLAG_NONE			(0 << 0)
-#define PROPIFYFLAG_NO_WEAPONS		(1 << 0)	/* Disables weapons on prop */
+#define PROPIFYFLAG_NO_WEAPONS		(1 << 0)	/* Disables weapons on player */
 
 /**
- * Prop entry containing the name of a prop and the location of its model file.
+ * methodmap PropifyPropEntry
+ * Prop entry containing the friendly name of a prop and the location of its model file.
  */
 methodmap PropifyPropEntry < StringMap {
 	property bool IsValid {
@@ -45,8 +46,7 @@ methodmap PropifyPropEntry < StringMap {
 
 
 /**
- * PropifyTFPlayer
- *
+ * methodmap PropifyTFPlayer
  * Class that describes a player that is allowed to be turned into a prop.
  */
 bool __bClientIsPropped[MAXPLAYERS+1], __bClientIsDisarmed[MAXPLAYERS+1],
@@ -111,6 +111,9 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		return true;
 	}
 	
+	/**
+	 * Reset prop state.
+	 */
 	public void Reset() {
 		__bClientIsPropped[this.Index] = false;
 		__bClientIsPropLocked[this.Index] = false;
@@ -128,13 +131,17 @@ methodmap PropifyTFPlayer < CTFPlayer {
 			
 			if (wasDisarmed) {
 				int health = this.Health;
-				TF2_RegeneratePlayer(this.Index);
+				this.Regenerate();
 				this.Health = health;
 			}
 		}
 	}
 };
 
+/**
+ * methodmap PropifyPropList
+ * An ArrayList containing a list of props.
+ */
 methodmap PropifyPropList < ArrayList {
 	public PropifyPropList() {
 		return view_as<PropifyPropList>( new ArrayList() );
