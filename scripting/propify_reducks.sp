@@ -44,6 +44,37 @@ public void OnPluginStart() {
 	}
 }
 
+/* Basic cleanup routine. */
+public void OnPluginEnd() {
+	for (int i = MaxClients; i > 0; --i) {
+		if (IsClientInGame(i)) {
+			OnClientDisconnect(i);
+		}
+	}
+	g_PropList.Clear();
+}
+
+/* Overlay prop-making methods onto player. */
+public void OnClientPutInServer(int iClient) {
+	g_proppablePlayers[iClient] = new PropifyTFPlayer(iClient);
+}
+
+public void OnClientDisconnect(int iClient) {
+	PropifyTFPlayer player = g_proppablePlayers[iClient];
+	if (player.IsPropped) {
+		player.Unprop();
+	} else {
+		player.Reset();
+	}
+	g_proppablePlayers[iClient] = null;
+}
+
+/* Do fancy prop loading stuff */
+public void OnMapStart() {
+	
+}
+
+
 /**
  * Hook for `post_inventory_application` to restrip propped players of weapons as necessary
  */
@@ -79,31 +110,4 @@ public Action ConCmd_PropPlayer(int iClient, int nArgs) {
 	}
 	
 	return Plugin_Handled;
-}
-
-public void OnMapStart() {
-	/* Do fancy prop loading stuff */
-}
-
-public void OnClientPutInServer(int iClient) {
-	g_proppablePlayers[iClient] = new PropifyTFPlayer(iClient);
-}
-
-public void OnClientDisconnect(int iClient) {
-	PropifyTFPlayer player = g_proppablePlayers[iClient];
-	if (player.IsPropped) {
-		player.Unprop();
-	} else {
-		player.Reset();
-	}
-	g_proppablePlayers[iClient] = null;
-}
-
-public void OnPluginEnd() {
-	for (int i = MaxClients; i > 0; --i) {
-		if (IsClientInGame(i)) {
-			OnClientDisconnect(i);
-		}
-	}
-	g_PropList.Clear();
 }
