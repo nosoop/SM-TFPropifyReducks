@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.2.0"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -19,6 +19,7 @@ public Plugin myinfo = {
 };
 
 PropifyPropList g_PropList;
+ArrayList g_PropConfigs;
 PropifyTFPlayer g_proppablePlayers[MAXPLAYERS+1];
 KeyValueSectionParser g_PropListParser;
 
@@ -34,6 +35,7 @@ public void OnPluginStart() {
 	// Besides the whole 1.7-rewrite stuff, prop list parsing *must* be passed to a private forward that calls a function now
 	g_PropListParser = new KeyValueSectionParser();
 	g_PropListParser.AddCallbackFunction("proplist", INVALID_HANDLE, KeyValueSection_PropList);
+	g_PropListParser.AddCallbackFunction("includes", INVALID_HANDLE, KeyValueSection_Includes);
 	
 	// Late loads, as always.
 	for (int i = MaxClients; i > 0; --i) {
@@ -74,33 +76,50 @@ public void OnMapStart() {
 }
 
 void LoadPropConfigs() {
-	ParsePropConfigs("base_main");
+	g_PropConfigs = new ArrayList(PLATFORM_MAX_PATH);
+	
+	g_PropConfigs.PushString("base");
+	
+	char listName[PLATFORM_MAX_PATH];
+	for (int i = 0; i < g_PropConfigs.Length; i++) {
+		g_PropConfigs.GetString(i, listName, sizeof(listName));
+		ParsePropConfigs(listName);
+	}
 	
 	// TODO hold an ArrayList of prop lists that have been included
+	delete g_PropConfigs;
 }
 
 void ParsePropConfigs(const char[] listName) {
 	KeyValues kv = new KeyValues(listName);
 	
-	int pre = g_PropList.Length;
+	int nProps = g_PropList.Length;
 	
 	char sPropFilePath[PLATFORM_MAX_PATH];
-    Format(sPropFilePath, sizeof(sPropFilePath), "data/propify/%s.txt", listName);
-    BuildPath(Path_SM, sPropFilePath, sizeof(sPropFilePath), sPropFilePath);
+	Format(sPropFilePath, sizeof(sPropFilePath), "data/propify/%s.txt", listName);
+	BuildPath(Path_SM, sPropFilePath, sizeof(sPropFilePath), sPropFilePath);
 	
 	kv.ImportFromFile(sPropFilePath);
 	g_PropListParser.Parse(kv);
 	delete kv;
 	
-	int post = g_PropList.Length;
+	int nAdded = g_PropList.Length - nProps;
 	
-	PrintToServer("%d props added from prop list %s.", post-pre, listName);
+	
+	if (nAdded > 0) {
+		PrintToServer("%d props added from prop list %s.", nAdded, listName);
+	}
 }
 
 public void KeyValueSection_PropList(const char[] key, const char[] value) {
 	g_PropList.AddPropToList(key, value);
 }
 
+public void KeyValueSection_Includes(const char[] key, const char[] value) {
+	if (g_PropConfigs.FindString(value) == -1) {
+		g_PropConfigs.PushString(value);
+	}
+}
 
 /**
  * Hook for `post_inventory_application` to restrip propped players of weapons as necessary
