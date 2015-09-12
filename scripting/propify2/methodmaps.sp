@@ -58,7 +58,18 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	property bool IsPropLocked {
 		public get() { return __bClientIsPropLocked[this.Index]; }
 		public set(bool bPropLocked) {
-			/* TODO implementation of prop locking */
+			if (!this.IsPropped) return;
+			
+			SetVariantInt(bPropLocked ? 0 : 1);
+			AcceptEntityInput(this.Index, "SetCustomModelRotates");
+			
+			if (bPropLocked) {
+				SetEntPropFloat(this.Index, Prop_Send, "m_flMaxspeed", 1.0);
+			} else {
+				TF2_StunPlayer(this.Index, 0.0, 0.0, TF_STUNFLAG_SLOWDOWN);
+			}
+			
+			__bClientIsPropLocked[this.Index] = bPropLocked;
 		}
 	}
 	property bool IsDisarmed {
