@@ -64,6 +64,12 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	property bool IsDisarmed {
 		public get() { return __bClientIsDisarmed[this.Index]; }
 	}
+	property bool ThirdPerson {
+		public set(bool bThirdPerson) {
+			SetVariantInt(bThirdPerson ? 1 : 0);
+			AcceptEntityInput(this.Index, "SetForcedTauntCam");
+		}
+	}
 	
 	public PropifyTFPlayer(int clientIndex) {
 		PropifyTFPlayer player = view_as<PropifyTFPlayer>( new CTFPlayer(clientIndex) );
@@ -94,11 +100,6 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		return true;
 	}
 	
-	public void SetThirdPerson(bool bEnabled) {
-		SetVariantInt(bEnabled ? 1 : 0);
-		AcceptEntityInput(this.Index, "SetForcedTauntCam");
-	}
-	
 	public void Reset() {
 		__bClientIsPropped[this.Index] = false;
 		__bClientIsPropLocked[this.Index] = false;
@@ -112,7 +113,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		
 		if (this.Index > 0 && IsClientInGame(this.Index)) {
 			this.SetCustomModel("");
-			this.SetThirdPerson(false);
+			this.ThirdPerson = false;
 			
 			if (wasDisarmed) {
 				int health = this.Health;

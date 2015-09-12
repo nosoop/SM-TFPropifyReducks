@@ -71,7 +71,7 @@ public Action ConCmd_PropPlayer(int iClient, int nArgs) {
 	player.SetProp(entry, PROPIFYFLAG_NO_WEAPONS);
 	delete entry;
 	
-	player.SetThirdPerson(true);
+	player.ThirdPerson = true;
 	
 	return Plugin_Handled;
 }
