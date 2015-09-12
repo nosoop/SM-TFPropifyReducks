@@ -7,8 +7,9 @@
 #pragma newdecls required
 
 #include "propify2/methodmaps.sp"
+#include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.0.4"
+#define PLUGIN_VERSION "0.1.0"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -19,22 +20,20 @@ public Plugin myinfo = {
 
 PropifyPropList g_PropList;
 PropifyTFPlayer g_proppablePlayers[MAXPLAYERS+1];
+KeyValueSectionParser g_PropListParser;
 
 public void OnPluginStart() {
 	g_PropList = new PropifyPropList();
-	
-	// Temporary prop list
-	g_PropList.AddPropToList("Oildrum", "models/props_2fort/oildrum.mdl");
-	g_PropList.AddPropToList("Spy's Box", "models/workshop/player/items/spy/taunt_spy_boxtrot/taunt_spy_boxtrot.mdl");
-	g_PropList.AddPropToList("Barricade Sign", "models/props_gameplay/sign_barricade001a.mdl");
-	g_PropList.AddPropToList("Computer Cart", "models/props_well/computer_cart01.mdl");
-	g_PropList.AddPropToList("Skull Sign", "models/props_mining/sign001.mdl");
-	
+		
 	HookEvent("player_spawn", Event_PlayerSpawn_Post, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_PlayerInventoryApplication_Post, EventHookMode_Post);
 	
 	// Test prop command for fine-tuning prop behavior
 	RegAdminCmd("sm_prop", ConCmd_PropPlayer, ADMFLAG_ROOT);
+	
+	// Besides the whole 1.7-rewrite stuff, prop list parsing *must* be passed to a private forward that calls a function now
+	g_PropListParser = new KeyValueSectionParser();
+	g_PropListParser.AddCallbackFunction("proplist", INVALID_HANDLE, KeyValueSection_PropList);
 	
 	// Late loads, as always.
 	for (int i = MaxClients; i > 0; --i) {
@@ -71,7 +70,35 @@ public void OnClientDisconnect(int iClient) {
 
 /* Do fancy prop loading stuff */
 public void OnMapStart() {
+	LoadPropConfigs();
+}
+
+void LoadPropConfigs() {
+	ParsePropConfigs("base_main");
 	
+	// TODO hold an ArrayList of prop lists that have been included
+}
+
+void ParsePropConfigs(const char[] listName) {
+	KeyValues kv = new KeyValues(listName);
+	
+	int pre = g_PropList.Length;
+	
+	char sPropFilePath[PLATFORM_MAX_PATH];
+    Format(sPropFilePath, sizeof(sPropFilePath), "data/propify/%s.txt", listName);
+    BuildPath(Path_SM, sPropFilePath, sizeof(sPropFilePath), sPropFilePath);
+	
+	kv.ImportFromFile(sPropFilePath);
+	g_PropListParser.Parse(kv);
+	delete kv;
+	
+	int post = g_PropList.Length;
+	
+	PrintToServer("%d props added from prop list %s.", post-pre, listName);
+}
+
+public void KeyValueSection_PropList(const char[] key, const char[] value) {
+	g_PropList.AddPropToList(key, value);
 }
 
 
