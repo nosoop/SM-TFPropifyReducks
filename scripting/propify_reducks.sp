@@ -8,7 +8,7 @@
 
 #include "propify2/methodmaps.sp"
 
-#define PLUGIN_VERSION "0.0.3"
+#define PLUGIN_VERSION "0.0.4"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -35,6 +35,7 @@ public void OnPluginStart() {
 	
 	// Test prop command for fine-tuning prop behavior
 	RegAdminCmd("sm_prop", ConCmd_PropPlayer, ADMFLAG_ROOT);
+	RegAdminCmd("sm_unprop", ConCmd_UnpropPlayer, ADMFLAG_ROOT);
 	
 	// Late loads, as always.
 	for (int i = MaxClients; i > 0; --i) {
@@ -72,6 +73,13 @@ public Action ConCmd_PropPlayer(int iClient, int nArgs) {
 	delete entry;
 	
 	player.ThirdPerson = true;
+	
+	return Plugin_Handled;
+}
+
+public Action ConCmd_UnpropPlayer(int iClient, int nArgs) {
+	PropifyTFPlayer player = g_proppablePlayers[iClient];
+	player.Unprop();
 	
 	return Plugin_Handled;
 }
