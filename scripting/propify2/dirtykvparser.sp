@@ -9,7 +9,7 @@
  *
  * Is this a terrible abuse of 1.7's transitional syntax?  Yeah.  It probably is.
  */
-typedef KeyValueTraversalCallback = function void(const char[] key, const char[] value);
+typedef KeyValueSectionCallback = function void(const char[] key, const char[] value);
 methodmap KeyValueSectionParser < StringMap {
 	
 	public KeyValueSectionParser() {
@@ -19,7 +19,7 @@ methodmap KeyValueSectionParser < StringMap {
 	/**
 	 * Adds a function to a list that, when passing over a given section, will be called once for every key-value pair.
 	 */
-	public void AddCallbackFunction(const char[] section, Handle plugin, KeyValueTraversalCallback callback) {
+	public void AddCallbackFunction(const char[] section, Handle plugin, KeyValueSectionCallback callback) {
 		Handle privateForward = null;
 		
 		if (!this.GetValue(section, privateForward)) {
