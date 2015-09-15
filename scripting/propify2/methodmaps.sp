@@ -11,6 +11,14 @@
 #define PROPIFYFLAG_NONE			(0 << 0)
 #define PROPIFYFLAG_NO_WEAPONS		(1 << 0)	/* Disables weapons on player */
 
+
+char HIDABLE_CLASSES[][] = {
+    "tf_wearable",
+    "tf_powerup_bottle",
+    "tf_wearable_demoshield",
+    "tf_weapon_spellbook"
+};
+
 /**
  * methodmap PropifyPropEntry
  * Prop entry containing the friendly name of a prop and the location of its model file.
@@ -90,6 +98,20 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		return player;
 	}
 	
+	/**
+	 * Sets visibility on the player's cosmetics.
+	 */
+	public void SetPlayerCosmeticVisibility(bool bVisible) {
+		for (int i = 0; i < sizeof(HIDABLE_CLASSES); i++) {
+			int iCosmetic = -1;
+			while((iCosmetic = FindEntityByClassname(iCosmetic, HIDABLE_CLASSES[i])) != -1) {      
+				if (GetEntPropEnt(iCosmetic, Prop_Send, "m_hOwnerEntity") == this.Index) {
+					SetCosmeticVisibility(iCosmetic, bVisible);
+				}
+			}
+		}
+	}
+	
 	public void RemoveWeapons() {
 		TF2_RemoveAllWeapons(this.Index);
 	}
@@ -102,10 +124,11 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		entry.GetPath(path, sizeof(path));
 		this.SetCustomModel(path);
 		
-		if (flags & PROPIFYFLAG_NO_WEAPONS == PROPIFYFLAG_NO_WEAPONS) {
+		if (flags & PROPIFYFLAG_NO_WEAPONS) {
 			__bClientIsDisarmed[this.Index] = true;
 			this.RemoveWeapons();
 		}
+		this.SetPlayerCosmeticVisibility(false);
 		
 		__bClientIsPropped[this.Index] = true;
 		return true;
@@ -128,6 +151,8 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		if (this.Index > 0 && IsClientInGame(this.Index)) {
 			this.SetCustomModel("");
 			this.ThirdPerson = false;
+			
+			this.SetPlayerCosmeticVisibility(true);
 			
 			if (wasDisarmed) {
 				int health = this.Health;
@@ -189,3 +214,16 @@ methodmap PropifyPropList < ArrayList {
 		this.Clear();
 	}
 };
+
+public void SetCosmeticVisibility(int iCosmetic, bool bVisible) {
+	SetEntityRenderMode(iCosmetic, RENDER_TRANSCOLOR);
+	SetEntityRenderColor(iCosmetic, 255, 255, 255, bVisible ? 255 : 0);
+	
+	AcceptEntityInput(iCosmetic, bVisible ? "EnableShadow" : "DisableShadow");
+	
+	SetVariantString(bVisible ? "ParticleEffectStart" : "ParticleEffectStop");
+	AcceptEntityInput(iCosmetic, "DispatchEffect");
+	
+	// Shrink prop to ensure visibility (setting player glow would make this visible otherwise)
+	SetEntPropFloat(iCosmetic, Prop_Send, "m_flModelScale", bVisible ? 1.0 : 0.0);
+}
