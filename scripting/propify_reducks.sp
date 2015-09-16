@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.2.0"
+#define PLUGIN_VERSION "0.3.0"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -28,14 +28,13 @@ public void OnPluginStart() {
 		
 	HookEvent("player_spawn", Event_PlayerSpawn_Post, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_PlayerInventoryApplication_Post, EventHookMode_Post);
-	
-	// Test prop command for fine-tuning prop behavior
-	RegAdminCmd("sm_prop", ConCmd_PropPlayer, ADMFLAG_ROOT);
-	
+		
 	// Besides the whole 1.7-rewrite stuff, prop list parsing *must* be passed to a private forward that calls a function now
 	g_PropListParser = new KeyValueSectionParser();
 	g_PropListParser.AddCallbackFunction("proplist", INVALID_HANDLE, KeyValueSection_PropList);
 	g_PropListParser.AddCallbackFunction("includes", INVALID_HANDLE, KeyValueSection_Includes);
+	
+	// TODO create command for reloading prop lists
 	
 	// Late loads, as always.
 	for (int i = MaxClients; i > 0; --i) {
@@ -140,20 +139,4 @@ public void Event_PlayerSpawn_Post(Event event, const char[] name, bool dontBroa
 	player.Unprop();
 }
 
-// Test prop command
-public Action ConCmd_PropPlayer(int iClient, int nArgs) {
-	PropifyTFPlayer player = g_proppablePlayers[iClient];
-	
-	if (!player.IsPropped) {
-		PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
-		
-		player.SetProp(entry, PROPIFYFLAG_NO_WEAPONS);
-		delete entry;
-		
-		player.ThirdPerson = true;
-	} else {
-		player.Unprop();
-	}
-	
-	return Plugin_Handled;
-}
+#include "propify2/natives.sp"

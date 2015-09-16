@@ -1,0 +1,58 @@
+/**
+ * Propify2 natives include file for the main plugin.
+ * Mostly boilerplate.
+ *
+ * For API information, check "include/propify2.inc"
+ */
+public APLRes AskPluginLoad2(Handle hMySelf, bool bLate, char[] strError, int iMaxErrors) {
+	RegPluginLibrary("nosoop-propify2");
+
+	CreateNative("Propify2_PropPlayer", Native_PropPlayer);
+	CreateNative("Propify2_UnpropPlayer", Native_UnpropPlayer);
+	CreateNative("Propify2_IsClientProp", Native_IsClientProp);
+
+	CreateNative("Propify2_GetClientPropLock", Native_GetClientPropLock);
+	CreateNative("Propify2_SetClientPropLock", Native_SetClientPropLock);
+
+	CreateNative("Propify2_SetClientThirdPerson", Native_SetClientThirdPerson);
+
+	CreateNative("Propify2_GetPropList", Native_GetPropList);
+
+	// TODO implement natives for parser callbacks
+
+	return APLRes_Success;
+}
+
+/* Get / Set client propped state */
+public int Native_PropPlayer(Handle plugin, int nArgs) {
+	PropifyTFPlayer player = g_proppablePlayers[GetNativeCell(1)];
+	PropifyPropEntry entry = GetNativeCell(2);
+	int flags = GetNativeCell(3);
+	
+	return player.SetProp(entry, flags);
+}
+public int Native_UnpropPlayer(Handle plugin, int nArgs) {
+	PropifyTFPlayer player = g_proppablePlayers[GetNativeCell(1)];
+	player.Unprop();
+}
+public int Native_IsClientProp(Handle plugin, int nArgs) {
+	return g_proppablePlayers[GetNativeCell(1)].IsPropped;
+}
+
+/* Get / Set prop lock */
+public int Native_GetClientPropLock(Handle plugin, int nArgs) {
+	return g_proppablePlayers[GetNativeCell(1)].IsPropLocked;
+}
+public int Native_SetClientPropLock(Handle plugin, int nArgs) {
+	return g_proppablePlayers[GetNativeCell(1)].IsPropLocked = GetNativeCell(2);
+}
+
+/* Set third-person mode */
+public int Native_SetClientThirdPerson(Handle plugin, int nArgs) {
+	g_proppablePlayers[GetNativeCell(1)].ThirdPerson = GetNativeCell(2);
+}
+
+/* Gets a duplicate reference of the current prop list */
+public int Native_GetPropList(Handle plugin, int nArgs) {
+	SetNativeCellRef(1, CloneHandle(g_PropList));
+}
