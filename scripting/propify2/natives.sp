@@ -14,6 +14,7 @@ public APLRes AskPluginLoad2(Handle hMySelf, bool bLate, char[] strError, int iM
 	CreateNative("Propify2_GetClientPropLock", Native_GetClientPropLock);
 	CreateNative("Propify2_SetClientPropLock", Native_SetClientPropLock);
 
+	CreateNative("Propify2_GetClientThirdPerson", Native_GetClientThirdPerson);
 	CreateNative("Propify2_SetClientThirdPerson", Native_SetClientThirdPerson);
 
 	CreateNative("Propify2_GetPropList", Native_GetPropList);
@@ -44,10 +45,13 @@ public int Native_GetClientPropLock(Handle plugin, int nArgs) {
 	return g_proppablePlayers[GetNativeCell(1)].IsPropLocked;
 }
 public int Native_SetClientPropLock(Handle plugin, int nArgs) {
-	return g_proppablePlayers[GetNativeCell(1)].IsPropLocked = GetNativeCell(2);
+	g_proppablePlayers[GetNativeCell(1)].IsPropLocked = GetNativeCell(2);
 }
 
-/* Set third-person mode */
+/* Get / Set third-person mode */
+public int Native_GetClientThirdPerson(Handle plugin, int nArgs) {
+	return g_proppablePlayers[GetNativeCell(1)].ThirdPerson;
+}
 public int Native_SetClientThirdPerson(Handle plugin, int nArgs) {
 	g_proppablePlayers[GetNativeCell(1)].ThirdPerson = GetNativeCell(2);
 }

@@ -58,7 +58,7 @@ methodmap PropifyPropEntry < StringMap {
  * Class that describes a player that is allowed to be turned into a prop.
  */
 bool __bClientIsPropped[MAXPLAYERS+1], __bClientIsDisarmed[MAXPLAYERS+1],
-	__bClientIsPropLocked[MAXPLAYERS+1];
+	__bClientIsPropLocked[MAXPLAYERS+1], __bClientIsInThirdPerson[MAXPLAYERS+1];
 methodmap PropifyTFPlayer < CTFPlayer {
 	property bool IsPropped {
 		public get() { return __bClientIsPropped[this.Index]; }
@@ -84,9 +84,13 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		public get() { return __bClientIsDisarmed[this.Index]; }
 	}
 	property bool ThirdPerson {
-		public set(bool bThirdPerson) {
-			SetVariantInt(bThirdPerson ? 1 : 0);
+		public get() {
+			return __bClientIsInThirdPerson[this.Index];
+		}
+		public set(bool bEnabled) {
+			SetVariantInt(bEnabled ? 1 : 0);
 			AcceptEntityInput(this.Index, "SetForcedTauntCam");
+			__bClientIsInThirdPerson[this.Index] = bEnabled;
 		}
 	}
 	

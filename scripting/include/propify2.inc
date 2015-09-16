@@ -39,6 +39,7 @@ native bool Propify2_IsClientProp(int client);
 native bool Propify2_GetClientPropLock(int client);
 native void Propify2_SetClientPropLock(int client, bool bLocked);
 
+native bool Propify2_GetClientThirdPerson(int client);
 native void Propify2_SetClientThirdPerson(int client, bool bEnabled);
 
 methodmap PropifyPropEntry < StringMap {
@@ -56,6 +57,9 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		}
 	}
 	property bool ThirdPerson {
+		public get() {
+			return Propify2_GetClientThirdPerson(this.Index);
+		}
 		public set(bool bThirdPerson) {
 			Propify2_SetClientThirdPerson(this.Index, bThirdPerson);
 		}
