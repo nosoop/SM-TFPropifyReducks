@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.3.5"
+#define PLUGIN_VERSION "0.3.6"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -25,6 +25,7 @@ KeyValueSectionParser g_PropListParser;
 
 public void OnPluginStart() {
 	g_PropList = new PropifyPropList();
+	g_PropConfigs = new ArrayList(PLATFORM_MAX_PATH);
 		
 	HookEvent("player_spawn", Event_PlayerSpawn_Post, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_PlayerInventoryApplication_Post, EventHookMode_Post);
@@ -75,45 +76,49 @@ public void OnMapStart() {
 }
 
 void LoadPropConfigs() {
-	g_PropConfigs = new ArrayList(PLATFORM_MAX_PATH);
-	
+	g_PropList.Clear();
 	g_PropConfigs.PushString("base");
 	
 	char listName[PLATFORM_MAX_PATH];
 	for (int i = 0; i < g_PropConfigs.Length; i++) {
 		g_PropConfigs.GetString(i, listName, sizeof(listName));
-		ParsePropConfigs(listName);
+		ParsePropConfig(listName);
 	}
 	
-	// TODO hold an ArrayList of prop lists that have been included
-	delete g_PropConfigs;
+	g_PropConfigs.Clear();
 }
 
-void ParsePropConfigs(const char[] listName) {
-	KeyValues kv = new KeyValues(listName);
-	
+void ParsePropConfig(const char[] listName) {
 	int nProps = g_PropList.Length;
 	
 	char sPropFilePath[PLATFORM_MAX_PATH];
 	Format(sPropFilePath, sizeof(sPropFilePath), "data/propify/%s.txt", listName);
 	BuildPath(Path_SM, sPropFilePath, sizeof(sPropFilePath), sPropFilePath);
 	
-	kv.ImportFromFile(sPropFilePath);
-	g_PropListParser.Parse(kv);
-	delete kv;
+	if (FileExists(sPropFilePath)) {
+		KeyValues kv = new KeyValues(listName);
+		kv.ImportFromFile(sPropFilePath);
+		g_PropListParser.Parse(kv);
+		delete kv;
+	}
 	
 	int nAdded = g_PropList.Length - nProps;
-	
 	
 	if (nAdded > 0) {
 		PrintToServer("%d props added from prop list %s.", nAdded, listName);
 	}
 }
 
+/**
+ * Adds the name / path of pairs in the `proplist` section to the prop list.
+ */
 public void KeyValueSection_PropList(const char[] key, const char[] value) {
 	g_PropList.AddPropToList(key, value);
 }
 
+/**
+ * Adds the value of pairs in the `includes` section into the list of configs to check.
+ */
 public void KeyValueSection_Includes(const char[] key, const char[] value) {
 	if (g_PropConfigs.FindString(value) == -1) {
 		g_PropConfigs.PushString(value);
