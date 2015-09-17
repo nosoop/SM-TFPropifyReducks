@@ -17,6 +17,8 @@ public APLRes AskPluginLoad2(Handle hMySelf, bool bLate, char[] strError, int iM
 	CreateNative("Propify2_GetClientThirdPerson", Native_GetClientThirdPerson);
 	CreateNative("Propify2_SetClientThirdPerson", Native_SetClientThirdPerson);
 
+	CreateNative("Propify2_GetClientDisarmedState", Native_GetClientDisarmedState);
+
 	CreateNative("Propify2_GetPropList", Native_GetPropList);
 
 	// TODO implement natives for parser callbacks
@@ -54,6 +56,11 @@ public int Native_GetClientThirdPerson(Handle plugin, int nArgs) {
 }
 public int Native_SetClientThirdPerson(Handle plugin, int nArgs) {
 	g_proppablePlayers[GetNativeCell(1)].ThirdPerson = GetNativeCell(2);
+}
+
+/* Get disarmed state */
+public int Native_GetClientDisarmedState(Handle plugin, int nArgs) {
+	return g_proppablePlayers[GetNativeCell(1)].IsDisarmed;
 }
 
 /* Gets a duplicate reference of the current prop list */

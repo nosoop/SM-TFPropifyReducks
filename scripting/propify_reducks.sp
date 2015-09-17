@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.3.1"
+#define PLUGIN_VERSION "0.3.2"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",

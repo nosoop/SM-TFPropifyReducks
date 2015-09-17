@@ -27,7 +27,10 @@ public void __pl_propify_SetNTVOptional() {
 	MarkNativeAsOptional("Propify2_GetClientPropLock");
 	MarkNativeAsOptional("Propify2_SetClientPropLock");
 	
+	MarkNativeAsOptional("Propify2_GetClientThirdPerson");
 	MarkNativeAsOptional("Propify2_SetClientThirdPerson");
+	
+	MarkNativeAsOptional("Propify2_GetClientDisarmedState");
 	
 	MarkNativeAsOptional("Propify2_GetPropList");
 }
@@ -42,6 +45,8 @@ native void Propify2_SetClientPropLock(int client, bool bLocked);
 native bool Propify2_GetClientThirdPerson(int client);
 native void Propify2_SetClientThirdPerson(int client, bool bEnabled);
 
+native bool Propify2_GetClientDisarmedState(int client);
+
 methodmap PropifyPropEntry < StringMap {
 	/* No exposed methods in library just yet. */
 }
@@ -54,6 +59,11 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		public get() { return Propify2_GetClientPropLock(this.Index); }
 		public set(bool bPropLocked) {
 			Propify2_SetClientPropLock(this.Index, bPropLocked);
+		}
+	}
+	property bool IsDisarmed {
+		public get() {
+			return Propify2_GetClientDisarmedState(this.Index);
 		}
 	}
 	property bool ThirdPerson {
