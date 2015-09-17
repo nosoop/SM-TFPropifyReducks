@@ -83,6 +83,11 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	property bool IsDisarmed {
 		public get() { return __bClientIsDisarmed[this.Index]; }
 	}
+	property bool DrawViewModel {
+		public set(bool bEnabled) {
+			return SetEntProp(this.Index, Prop_Send, "m_bDrawViewmodel", bEnabled);
+		}
+	}
 	property bool ThirdPerson {
 		public get() {
 			return __bClientIsInThirdPerson[this.Index];
@@ -118,6 +123,8 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	
 	public void RemoveWeapons() {
 		TF2_RemoveAllWeapons(this.Index);
+		
+		this.DrawViewModel = false;
 	}
 	
 	/**
@@ -162,6 +169,8 @@ methodmap PropifyTFPlayer < CTFPlayer {
 				int health = this.Health;
 				this.Regenerate();
 				this.Health = health;
+				
+				this.DrawViewModel = true;
 			}
 		}
 	}
