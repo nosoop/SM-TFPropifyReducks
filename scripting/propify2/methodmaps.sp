@@ -69,10 +69,10 @@ methodmap PropifyTFPlayer < CTFPlayer {
 			if (!this.IsPropped) return;
 			
 			SetVariantInt(bPropLocked ? 0 : 1);
-			AcceptEntityInput(this.Index, "SetCustomModelRotates");
+			this.AcceptInput("SetCustomModelRotates");
 			
 			if (bPropLocked) {
-				SetEntPropFloat(this.Index, Prop_Send, "m_flMaxspeed", 1.0);
+				this.SetPropFloat(Prop_Send, "m_flMaxspeed", 1.0);
 			} else {
 				TF2_StunPlayer(this.Index, 0.0, 0.0, TF_STUNFLAG_SLOWDOWN);
 			}
@@ -85,7 +85,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	}
 	property bool DrawViewModel {
 		public set(bool bEnabled) {
-			return SetEntProp(this.Index, Prop_Send, "m_bDrawViewmodel", bEnabled);
+			return this.SetProp(Prop_Send, "m_bDrawViewmodel", bEnabled);
 		}
 	}
 	property bool ThirdPerson {
@@ -94,7 +94,8 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		}
 		public set(bool bEnabled) {
 			SetVariantInt(bEnabled ? 1 : 0);
-			AcceptEntityInput(this.Index, "SetForcedTauntCam");
+			this.AcceptInput("SetForcedTauntCam");
+			
 			__bClientIsInThirdPerson[this.Index] = bEnabled;
 		}
 	}
@@ -112,18 +113,21 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	 */
 	public void SetPlayerCosmeticVisibility(bool bVisible) {
 		for (int i = 0; i < sizeof(HIDABLE_CLASSES); i++) {
-			int iCosmetic = -1;
-			while((iCosmetic = FindEntityByClassname(iCosmetic, HIDABLE_CLASSES[i])) != -1) {      
-				if (GetEntPropEnt(iCosmetic, Prop_Send, "m_hOwnerEntity") == this.Index) {
-					SetCosmeticVisibility(iCosmetic, bVisible);
+			CBaseEntity cosmetic = null;
+			while((cosmetic = CBaseEntity.FindByClassname(cosmetic, HIDABLE_CLASSES[i])) != null) {      
+				if (cosmetic.GetPropEnt(Prop_Send, "m_hOwnerEntity").Index == this.Index) {
+					SetCosmeticVisibility(cosmetic, bVisible);
 				}
 			}
 		}
 	}
 	
-	public void RemoveWeapons() {
+	/**
+	 * Prevent the player from using their weapons.
+	 */
+	public void Disarm() {
+		// TODO change m_flNextPrimaryAttack instead of removing weapons?
 		TF2_RemoveAllWeapons(this.Index);
-		
 		this.DrawViewModel = false;
 	}
 	
@@ -137,7 +141,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		
 		if (flags & PROPIFYFLAG_NO_WEAPONS) {
 			__bClientIsDisarmed[this.Index] = true;
-			this.RemoveWeapons();
+			this.Disarm();
 		}
 		this.SetPlayerCosmeticVisibility(false);
 		
@@ -161,7 +165,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		
 		this.Reset();
 		
-		if (this.Index > 0 && IsClientInGame(this.Index)) {
+		if (this.Index > 0 && this.IsInGame) {
 			this.SetCustomModel("");
 			this.ThirdPerson = false;
 			
@@ -230,15 +234,15 @@ methodmap PropifyPropList < ArrayList {
 	}
 };
 
-public void SetCosmeticVisibility(int iCosmetic, bool bVisible) {
-	SetEntityRenderMode(iCosmetic, RENDER_TRANSCOLOR);
-	SetEntityRenderColor(iCosmetic, 255, 255, 255, bVisible ? 255 : 0);
+public void SetCosmeticVisibility(CBaseEntity cosmetic, bool bVisible) {
+	cosmetic.RenderMode = RENDER_TRANSCOLOR;
+	cosmetic.SetRenderColor(255, 255, 255, bVisible ? 255 : 0);
 	
-	AcceptEntityInput(iCosmetic, bVisible ? "EnableShadow" : "DisableShadow");
+	cosmetic.AcceptInput(bVisible ? "EnableShadow" : "DisableShadow");
 	
 	SetVariantString(bVisible ? "ParticleEffectStart" : "ParticleEffectStop");
-	AcceptEntityInput(iCosmetic, "DispatchEffect");
+	cosmetic.AcceptInput("DispatchEffect");
 	
 	// Shrink prop to ensure visibility (setting player glow would make this visible otherwise)
-	SetEntPropFloat(iCosmetic, Prop_Send, "m_flModelScale", bVisible ? 1.0 : 0.0);
+	cosmetic.SetPropFloat(Prop_Send, "m_flModelScale", bVisible ? 1.0 : 0.0);
 }
