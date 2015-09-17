@@ -142,6 +142,8 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		this.SetPlayerCosmeticVisibility(false);
 		
 		__bClientIsPropped[this.Index] = true;
+		
+		this.IsPropLocked = false;
 		return true;
 	}
 	
