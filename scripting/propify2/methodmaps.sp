@@ -228,12 +228,16 @@ methodmap PropifyPropList < ArrayList {
 	}
 };
 
-public void SetCosmeticVisibility(CBaseEntity cosmetic, bool bVisible) {
-	cosmetic.RenderMode = RENDER_TRANSCOLOR;
-	cosmetic.SetRenderColor(255, 255, 255, bVisible ? 255 : 0);
+public void SetEntityVisibility(CBaseEntity entity, bool bVisible) {
+	entity.RenderMode = RENDER_TRANSCOLOR;
+	entity.SetRenderColor(255, 255, 255, bVisible ? 255 : 0);
 	
-	cosmetic.AcceptInput(bVisible ? "EnableShadow" : "DisableShadow");
-	
+	entity.AcceptInput(bVisible ? "EnableShadow" : "DisableShadow");
+}
+
+public void SetWearableVisibility(CBaseEntity cosmetic, bool bVisible) {
+	SetEntityVisibility(cosmetic, bVisible);
+
 	SetVariantString(bVisible ? "ParticleEffectStart" : "ParticleEffectStop");
 	cosmetic.AcceptInput("DispatchEffect");
 	
