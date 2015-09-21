@@ -3,6 +3,8 @@
 #endif
 #define _propify2_included
 
+#include <propify2_constants>
+
 #define GAME_TF2
 #include <thelpers/thelpers>
 
@@ -15,9 +17,6 @@ public SharedPlugin __pl_propify = {
     required = 0,
 #endif
 };
-
-#define PROPIFYFLAG_NONE				(0 << 0)
-#define PROPIFYFLAG_NO_WEAPONS			(1 << 0)	/* Disables weapons on player */
 
 public void __pl_propify_SetNTVOptional() {
 	MarkNativeAsOptional("Propify2_PropPlayer");
