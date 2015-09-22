@@ -77,7 +77,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	/**
 	 * Set the player's prop.
 	 */
-	public bool SetProp(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
+	public bool SetPropModel(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
 		return Propify2_PropPlayer(this.Index, entry, flags);
 	}
 	

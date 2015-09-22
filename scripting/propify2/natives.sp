@@ -32,7 +32,7 @@ public int Native_PropPlayer(Handle plugin, int nArgs) {
 	PropifyPropEntry entry = GetNativeCell(2);
 	int flags = GetNativeCell(3);
 	
-	return player.SetProp(entry, flags);
+	return player.SetPropModel(entry, flags);
 }
 public int Native_UnpropPlayer(Handle plugin, int nArgs) {
 	PropifyTFPlayer player = g_proppablePlayers[GetNativeCell(1)];

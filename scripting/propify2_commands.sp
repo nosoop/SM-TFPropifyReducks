@@ -8,7 +8,7 @@
 
 #include <propify2>
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.2.0"
 public Plugin myinfo = {
     name = "[TF2] Propify Commands",
     author = "nosoop",
@@ -23,15 +23,39 @@ public void OnPluginStart() {
 	Propify2_GetPropList(g_PropList);
 
 	RegAdminCmd("sm_prop", ConCmd_PropPlayer, ADMFLAG_SLAY);
+	RegAdminCmd("sm_prop_weapon", ConCmd_PropPlayerWeapon, ADMFLAG_SLAY);
 }
 
+/**
+ * Turns the player that used this command into a prop, disarming them in the process.
+ */
 public Action ConCmd_PropPlayer(int iClient, int nArgs) {
 	PropifyTFPlayer player = Propify2_GetPlayer(iClient);
 	
 	if (!player.IsPropped) {
 		PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
 		
-		player.SetProp(entry, PROPIFYFLAG_NO_WEAPONS);
+		player.SetPropModel(entry, PROPIFYFLAG_NO_WEAPONS);
+		delete entry;
+		
+		player.ThirdPerson = true;
+	} else {
+		player.Unprop();
+	}
+	
+	return Plugin_Handled;
+}
+
+/**
+ * Turns the player that used this command into a prop, with their weapons kept intact.
+ */
+public Action ConCmd_PropPlayerWeapon(int iClient, int nArgs) {
+	PropifyTFPlayer player = Propify2_GetPlayer(iClient);
+	
+	if (!player.IsPropped) {
+		PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
+		
+		player.SetPropModel(entry);
 		delete entry;
 		
 		player.ThirdPerson = true;

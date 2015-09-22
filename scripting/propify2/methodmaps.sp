@@ -110,7 +110,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 			CBaseEntity cosmetic = null;
 			while((cosmetic = CBaseEntity.FindByClassname(cosmetic, HIDABLE_CLASSES[i])) != null) {      
 				if (cosmetic.GetPropEnt(Prop_Send, "m_hOwnerEntity").Index == this.Index) {
-					SetCosmeticVisibility(cosmetic, bVisible);
+					SetWearableVisibility(cosmetic, bVisible);
 				}
 			}
 		}
@@ -126,9 +126,9 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	}
 	
 	/**
-	 * Set the player's prop.
+	 * Set the player's prop.  (Changed from SetProp because of transitional helper conflicts.)
 	 */
-	public bool SetProp(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
+	public bool SetPropModel(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
 		char path[PLATFORM_MAX_PATH];
 		entry.GetPath(path, sizeof(path));
 		this.SetCustomModel(path);

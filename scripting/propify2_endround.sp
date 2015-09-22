@@ -8,7 +8,7 @@
 
 #include <propify2>
 
-#define PLUGIN_VERSION "0.1.1"
+#define PLUGIN_VERSION "0.2.0"
 public Plugin myinfo = {
     name = "[TF2] Propify End-Round",
     author = "nosoop",
@@ -53,7 +53,7 @@ public void Event_RoundWin(Handle event, char[] name, bool dontBroadcast) {
 		
 		if (player.IsAlive) {
 			PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
-			player.SetProp(entry, PROPIFYFLAG_NO_WEAPONS);
+			player.SetPropModel(entry, PROPIFYFLAG_NO_WEAPONS);
 			
 			// TODO expose name / path of prop to notify the player, also show center text for win / lose / stalemate
 			
