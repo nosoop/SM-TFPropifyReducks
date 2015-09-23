@@ -1,0 +1,17 @@
+"Phrases"
+{
+	"Chat Loser Prop Transformation"
+	{
+		"#format"	"{1:s}"
+		"en"		"You have been turned into a {1}!  Blend in!"
+	}
+	"Chat Stalemate Prop Transformation"
+	{
+		"#format"	"{1:s}"
+		"en"		"Everyone's been turned into a prop!  You're a {1}!"
+	}
+	"Chat Winner Prop Hunt"
+	{
+		"en"		"The enemy team has been turned into props!  Hunt them down!"
+	}
+}
