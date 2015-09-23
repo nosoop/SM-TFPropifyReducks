@@ -6,7 +6,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.1.2"
+#define PLUGIN_VERSION "0.1.3"
 public Plugin myinfo = {
     name = "[TF2] Propify Standard Controls",
     author = "nosoop",
@@ -24,7 +24,7 @@ bool g_bPropLockLocked[MAXPLAYERS+1], g_bThirdPersonLocked[MAXPLAYERS+1];
  * +attack toggles prop locking (i.e., player is locked into position and angle).
  * +attack2 toggles third-person state if possible (not allowed during humiliation).
  */
-public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon) {
+public Action OnPlayerRunCmd(int client, int &buttons) {
 	PropifyTFPlayer player = Propify2_GetPlayer(client);
 	if (player.IsPropped && player.IsDisarmed) {
 		if (buttons & IN_JUMP && player.IsPropLocked) {
