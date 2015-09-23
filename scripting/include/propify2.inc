@@ -19,19 +19,6 @@ public SharedPlugin __pl_propify = {
 };
 
 public void __pl_propify_SetNTVOptional() {
-	MarkNativeAsOptional("Propify2_PropPlayer");
-	MarkNativeAsOptional("Propify2_UnpropPlayer");
-	MarkNativeAsOptional("Propify2_IsClientProp");
-
-	MarkNativeAsOptional("Propify2_GetClientPropLock");
-	MarkNativeAsOptional("Propify2_SetClientPropLock");
-	
-	MarkNativeAsOptional("Propify2_GetClientThirdPerson");
-	MarkNativeAsOptional("Propify2_SetClientThirdPerson");
-	
-	MarkNativeAsOptional("Propify2_GetClientDisarmedState");
-	
-	MarkNativeAsOptional("Propify2_GetPropList");
 }
 
 native bool Propify2_PropPlayer(int client, PropifyPropEntry entry, int flags);
@@ -47,9 +34,13 @@ native void Propify2_SetClientThirdPerson(int client, bool bEnabled);
 native bool Propify2_GetClientDisarmedState(int client);
 
 methodmap PropifyPropEntry < StringMap {
-	/* No exposed methods in library just yet. */
+	public void GetName(char[] buffer, int maxlength) {
+		this.GetString(PROPENTRY_NAME, buffer, maxlength);
+	}
+	public void GetPath(char[] buffer, int maxlength) {
+		this.GetString(PROPENTRY_PATH, buffer, maxlength);
+	}
 }
-
 methodmap PropifyTFPlayer < CTFPlayer {
 	property bool IsPropped {
 		public get() { return Propify2_IsClientProp(this.Index); }
