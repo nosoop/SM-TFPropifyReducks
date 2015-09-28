@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.5.0"
+#define PLUGIN_VERSION "0.5.1"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -18,6 +18,7 @@ public Plugin myinfo = {
     url = "https://github.com/nosoop"
 };
 
+// Provide a global prop list for compatibility with original Propify plugin
 PropifyPropList g_PropList;
 ArrayList g_PropConfigs;
 PropifyTFPlayer g_proppablePlayers[MAXPLAYERS+1];
@@ -70,6 +71,56 @@ public void OnClientDisconnect(int iClient) {
 	g_proppablePlayers[iClient] = null;
 }
 
+/**
+ * Hook for `post_inventory_application` to restrip propped players of weapons as necessary
+ */
+public void Event_PlayerInventoryApplication_Post(Event event, const char[] name, bool dontBroadcast) {
+	PropifyTFPlayer player = g_proppablePlayers[GetClientOfUserId(event.GetInt("userid"))];
+	
+	if (player != null && player.IsPropped && player.IsDisarmed) {
+		player.Disarm();
+	}
+}
+
+/**
+ * Hook for `player_spawn` to unset player prop (which also regrants the weapons removed by `post_inventory_application`).
+ */
+public void Event_PlayerSpawn_Post(Event event, const char[] name, bool dontBroadcast) {
+	PropifyTFPlayer player = g_proppablePlayers[GetClientOfUserId(event.GetInt("userid"))];
+	player.Unpropify();
+}
+
+/**
+ * Modifies prop behavior based on condition.
+ */
+public void TF2_OnConditionAdded(int client, TFCond condition) {
+	PropifyTFPlayer player = g_proppablePlayers[client];
+	if (player.IsPropped) {
+		if (condition == TFCond_Taunting) {
+			// Prevent prop rotation if player is taunting while propped.
+			player.IsPropLocked = true;
+		} else if (condition == TFCond_Cloaked) {
+			// Visual indication that player is currently cloaked.
+			// (Player is fully invisible to players on the enemy team.)
+			SetEntityAlpha(player.Index, 80);
+		}
+	}
+}
+
+/**
+ * Resets prop behavior based on condition.
+ */
+public void TF2_OnConditionRemoved(int client, TFCond condition) {
+	PropifyTFPlayer player = g_proppablePlayers[client];
+	if (player.IsPropped) {
+		if (condition == TFCond_Taunting) {
+			player.IsPropLocked = false;
+		} else if (condition == TFCond_Cloaked) {
+			SetEntityAlpha(player.Index, 255);
+		}
+	}
+}
+
 /* Do fancy prop loading stuff */
 public void OnMapStart() {
 	LoadPropConfigs();
@@ -78,6 +129,8 @@ public void OnMapStart() {
 void LoadPropConfigs() {
 	g_PropList.Clear();
 	g_PropConfigs.PushString("base");
+	
+	// TODO add map-specific config
 	
 	char listName[PLATFORM_MAX_PATH];
 	for (int i = 0; i < g_PropConfigs.Length; i++) {
@@ -123,25 +176,6 @@ public void KeyValueSection_Includes(const char[] key, const char[] value) {
 	if (g_PropConfigs.FindString(value) == -1) {
 		g_PropConfigs.PushString(value);
 	}
-}
-
-/**
- * Hook for `post_inventory_application` to restrip propped players of weapons as necessary
- */
-public void Event_PlayerInventoryApplication_Post(Event event, const char[] name, bool dontBroadcast) {
-	PropifyTFPlayer player = g_proppablePlayers[GetClientOfUserId(event.GetInt("userid"))];
-	
-	if (player != null && player.IsPropped && player.IsDisarmed) {
-		player.Disarm();
-	}
-}
-
-/**
- * Hook for `player_spawn` to unset player prop (which also regrants the weapons removed by `post_inventory_application`).
- */
-public void Event_PlayerSpawn_Post(Event event, const char[] name, bool dontBroadcast) {
-	PropifyTFPlayer player = g_proppablePlayers[GetClientOfUserId(event.GetInt("userid"))];
-	player.Unpropify();
 }
 
 #include "propify2/natives.sp"

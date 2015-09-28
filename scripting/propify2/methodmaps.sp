@@ -165,6 +165,10 @@ methodmap PropifyTFPlayer < CTFPlayer {
 			
 			this.SetPlayerCosmeticVisibility(true);
 			
+			// Remove cloak effect 
+			// TODO merge player condition changes into fewer methods
+			SetEntityAlpha(this.Index, 255);
+			
 			if (wasDisarmed) {
 				int health = this.Health;
 				this.Regenerate();
@@ -233,6 +237,14 @@ public void SetEntityVisibility(CBaseEntity entity, bool bVisible) {
 	entity.SetRenderColor(255, 255, 255, bVisible ? 255 : 0);
 	
 	entity.AcceptInput(bVisible ? "EnableShadow" : "DisableShadow");
+}
+
+public void SetEntityAlpha(CBaseEntity entity, int alpha) {
+	int r, g, b;
+	entity.GetRenderColor(r, g, b);
+	
+	entity.RenderMode = RENDER_TRANSCOLOR;
+	entity.SetRenderColor(r, g, b, alpha);
 }
 
 public void SetWearableVisibility(CBaseEntity cosmetic, bool bVisible) {
