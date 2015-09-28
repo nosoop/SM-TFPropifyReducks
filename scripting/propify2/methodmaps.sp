@@ -128,7 +128,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	/**
 	 * Set the player's prop.  (Changed from SetProp because of transitional helper conflicts.)
 	 */
-	public bool SetPropModel(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
+	public bool Propify(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
 		char path[PLATFORM_MAX_PATH];
 		entry.GetPath(path, sizeof(path));
 		this.SetCustomModel(path);
@@ -154,7 +154,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 		__bClientIsDisarmed[this.Index] = false;
 	}
 	
-	public void Unprop() {
+	public void Unpropify() {
 		bool wasDisarmed = this.IsDisarmed;
 		
 		this.Reset();

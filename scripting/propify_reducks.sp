@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.4.1"
+#define PLUGIN_VERSION "0.5.0"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -63,7 +63,7 @@ public void OnClientPutInServer(int iClient) {
 public void OnClientDisconnect(int iClient) {
 	PropifyTFPlayer player = g_proppablePlayers[iClient];
 	if (player.IsPropped) {
-		player.Unprop();
+		player.Unpropify();
 	} else {
 		player.Reset();
 	}
@@ -141,7 +141,7 @@ public void Event_PlayerInventoryApplication_Post(Event event, const char[] name
  */
 public void Event_PlayerSpawn_Post(Event event, const char[] name, bool dontBroadcast) {
 	PropifyTFPlayer player = g_proppablePlayers[GetClientOfUserId(event.GetInt("userid"))];
-	player.Unprop();
+	player.Unpropify();
 }
 
 #include "propify2/natives.sp"

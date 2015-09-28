@@ -68,14 +68,14 @@ methodmap PropifyTFPlayer < CTFPlayer {
 	/**
 	 * Set the player's prop.
 	 */
-	public bool SetPropModel(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
+	public bool Propify(PropifyPropEntry entry, int flags = PROPIFYFLAG_NONE) {
 		return Propify2_PropPlayer(this.Index, entry, flags);
 	}
 	
 	/**
 	 * Unsets the player's prop.
 	 */
-	public void Unprop() {
+	public void Unpropify() {
 		return Propify2_UnpropPlayer(this.Index);
 	}
 };

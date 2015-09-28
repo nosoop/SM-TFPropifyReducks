@@ -8,7 +8,7 @@
 
 #include <propify2>
 
-#define PLUGIN_VERSION "0.3.0"
+#define PLUGIN_VERSION "0.4.0"
 public Plugin myinfo = {
     name = "[TF2] Propify End-Round",
     author = "nosoop",
@@ -43,7 +43,7 @@ public void Event_RoundWin(Handle event, char[] name, bool dontBroadcast) {
 				|| player.Team == TFTeam_Spectator // are not on a playing team,
 				|| player.Team == TFTeam_Unassigned) {
 			continue;
-		} else if (player.Team == winningTeam) { // are not on the winning team,
+		} else if (player.Team == winningTeam) { // are on the winning team,
 			PrintToChat(i, "%T", "Chat Winner Prop Hunt", i);
 			continue;
 		} else if (TF2_IsPlayerInCondition(i, TFCond_HalloweenInHell) // may become ghosts or already are
@@ -58,7 +58,7 @@ public void Event_RoundWin(Handle event, char[] name, bool dontBroadcast) {
 		
 		if (player.IsAlive) {
 			PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
-			player.SetPropModel(entry, PROPIFYFLAG_NO_WEAPONS);
+			player.Propify(entry, PROPIFYFLAG_NO_WEAPONS);
 			
 			// TODO show center text for win / lose / stalemate?
 			char propName[PROP_MAX_NAME_LENGTH + 2];

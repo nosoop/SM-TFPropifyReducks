@@ -8,7 +8,7 @@
 
 #include <propify2>
 
-#define PLUGIN_VERSION "0.2.0"
+#define PLUGIN_VERSION "0.3.0"
 public Plugin myinfo = {
     name = "[TF2] Propify Commands",
     author = "nosoop",
@@ -35,12 +35,12 @@ public Action ConCmd_PropPlayer(int iClient, int nArgs) {
 	if (!player.IsPropped) {
 		PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
 		
-		player.SetPropModel(entry, PROPIFYFLAG_NO_WEAPONS);
+		player.Propify(entry, PROPIFYFLAG_NO_WEAPONS);
 		delete entry;
 		
 		player.ThirdPerson = true;
 	} else {
-		player.Unprop();
+		player.Unpropify();
 	}
 	
 	return Plugin_Handled;
@@ -55,12 +55,12 @@ public Action ConCmd_PropPlayerWeapon(int iClient, int nArgs) {
 	if (!player.IsPropped) {
 		PropifyPropEntry entry = g_PropList.Get(GetRandomInt(0, g_PropList.Length - 1));
 		
-		player.SetPropModel(entry);
+		player.Propify(entry);
 		delete entry;
 		
 		player.ThirdPerson = true;
 	} else {
-		player.Unprop();
+		player.Unpropify();
 	}
 	
 	return Plugin_Handled;
