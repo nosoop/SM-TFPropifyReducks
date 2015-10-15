@@ -21,8 +21,6 @@ bool g_bPropify2Loaded;
 PropifyPropList g_PropList = null;
 
 public void OnPluginStart() {
-	Propify2_GetPropList(g_PropList);
-
 	RegAdminCmd("sm_prop", ConCmd_PropPlayer, ADMFLAG_SLAY);
 	RegAdminCmd("sm_prop_weapon", ConCmd_PropPlayerWeapon, ADMFLAG_SLAY);
 }
