@@ -203,12 +203,20 @@ methodmap PropifyPropList < ArrayList {
 	}
 	
 	/**
-	 * Returns a clone of the PropifyPropEntry at the given index.
+	 * Returns the PropifyPropEntry instance at the given index.
+	 * The default behavior (for the purpose of external plugins) is to clone the handle.
+	 * 
 	 * Arguably, it's better to have a memory leak than to think you need to delete things.
+	 * (Though you should be careful when calling the method in its own methodmap, though...)
 	 */
-	public PropifyPropEntry Get(int index) {
+	public PropifyPropEntry Get(int index, bool clone=true) {
+		// This calls the superclass's Get method, right?
 		PropifyPropEntry result = this.Get(index);
-		return view_as<PropifyPropEntry>(CloneHandle(result));
+		if (clone) {
+			return view_as<PropifyPropEntry>(CloneHandle(result));
+		} else {
+			return result;
+		}
 	}
 	
 	/**
@@ -216,7 +224,7 @@ methodmap PropifyPropList < ArrayList {
 	 */
 	public void Resize(int newsize) {
 		for (int i = newsize; i < this.Length; i++) {
-			delete this.Get(i);
+			delete this.Get(i, false);
 		}
 		this.Resize(newsize);
 	}
@@ -226,7 +234,7 @@ methodmap PropifyPropList < ArrayList {
 	 */
 	public void Clear() {
 		for (int i = 0; i < this.Length; i++) {
-			delete this.Get(i);
+			delete this.Get(i, false);
 		}
 		this.Clear();
 	}
