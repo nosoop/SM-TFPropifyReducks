@@ -167,7 +167,7 @@ methodmap PropifyTFPlayer < CTFPlayer {
 			
 			// Remove cloak effect 
 			// TODO merge player condition changes into fewer methods
-			SetEntityAlpha(this.Index, 255);
+			SetEntityAlpha(this, 255);
 			
 			if (wasDisarmed) {
 				int health = this.Health;

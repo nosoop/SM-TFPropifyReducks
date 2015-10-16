@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.5.1"
+#define PLUGIN_VERSION "0.6.0"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -30,6 +30,8 @@ public void OnPluginStart() {
 		
 	HookEvent("player_spawn", Event_PlayerSpawn_Post, EventHookMode_Post);
 	HookEvent("post_inventory_application", Event_PlayerInventoryApplication_Post, EventHookMode_Post);
+	
+	RegAdminCmd("sm_propify2_reloadlist", AdminCmd_ReloadPropList, ADMFLAG_ROOT, "Reloads the prop list.");
 		
 	// Besides the whole 1.7-rewrite stuff, prop list parsing *must* be passed to a private forward that calls a function now
 	g_PropListParser = new KeyValueSectionParser();
@@ -102,7 +104,7 @@ public void TF2_OnConditionAdded(int client, TFCond condition) {
 		} else if (condition == TFCond_Cloaked) {
 			// Visual indication that player is currently cloaked.
 			// (Player is fully invisible to players on the enemy team.)
-			SetEntityAlpha(player.Index, 80);
+			SetEntityAlpha(player, 80);
 		}
 	}
 }
@@ -116,7 +118,7 @@ public void TF2_OnConditionRemoved(int client, TFCond condition) {
 		if (condition == TFCond_Taunting) {
 			player.IsPropLocked = false;
 		} else if (condition == TFCond_Cloaked) {
-			SetEntityAlpha(player.Index, 255);
+			SetEntityAlpha(player, 255);
 		}
 	}
 }
@@ -124,6 +126,11 @@ public void TF2_OnConditionRemoved(int client, TFCond condition) {
 /* Do fancy prop loading stuff */
 public void OnMapStart() {
 	LoadPropConfigs();
+}
+
+public Action AdminCmd_ReloadPropList(int client, int nArgs) {
+	LoadPropConfigs();
+	return Plugin_Handled;
 }
 
 void LoadPropConfigs() {
