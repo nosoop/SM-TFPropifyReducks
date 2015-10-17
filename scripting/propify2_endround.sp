@@ -8,11 +8,11 @@
 
 #include <propify2>
 
-#define PLUGIN_VERSION "0.4.0"
+#define PLUGIN_VERSION "0.4.1"
 public Plugin myinfo = {
     name = "[TF2] Propify End-Round",
     author = "nosoop",
-    description = "Camouflage yourself as the winning team hunts you down, you loser!",
+    description = "Blend in with the map as the winning team hunts you down, you loser!",
     version = PLUGIN_VERSION,
     url = "https://github.com/nosoop"
 };
