@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.6.2"
+#define PLUGIN_VERSION "0.6.3"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -99,13 +99,10 @@ public void Event_PlayerSpawn_Post(Event event, const char[] name, bool dontBroa
 public void TF2_OnConditionAdded(int client, TFCond condition) {
 	PropifyTFPlayer player = g_proppablePlayers[client];
 	if (player.IsPropped) {
-		if (condition == TFCond_Taunting) {
-			// Prevent prop rotation if player is taunting while propped.
-			player.IsPropLocked = true;
-		} else if (condition == TFCond_Cloaked) {
-			// Visual indication that player is currently cloaked.
-			// (Player is fully invisible to players on the enemy team.)
-			SetEntityAlpha(player, 80);
+		switch (condition) {
+			case TFCond_Taunting: { Prop_OnCondTaunting(player, true); }
+			case TFCond_Cloaked: { Prop_OnCondCloaked(player, true); }
+			case TFCond_Zoomed: { Prop_OnCondZoomed(player, true); }
 		}
 	}
 }
@@ -116,11 +113,39 @@ public void TF2_OnConditionAdded(int client, TFCond condition) {
 public void TF2_OnConditionRemoved(int client, TFCond condition) {
 	PropifyTFPlayer player = g_proppablePlayers[client];
 	if (player.IsPropped) {
-		if (condition == TFCond_Taunting) {
-			player.IsPropLocked = false;
-		} else if (condition == TFCond_Cloaked) {
-			SetEntityAlpha(player, 255);
+		switch (condition) {
+			case TFCond_Taunting: { Prop_OnCondTaunting(player, false); }
+			case TFCond_Cloaked: { Prop_OnCondCloaked(player, false); }
+			case TFCond_Zoomed: { Prop_OnCondZoomed(player, false); }
 		}
+	}
+}
+
+/**
+ * Prevent prop rotation if player is taunting while propped.
+ */
+void Prop_OnCondTaunting(PropifyTFPlayer player, bool bTaunting) {
+	// TODO use SetCustomModelRotates without stun, prevent taunt on proplock?
+	player.IsPropLocked = bTaunting;
+}
+
+/**
+ * Visual indication to self and allies that propped player is currently cloaked.
+ * (Player is fully invisible to players on the enemy team regardless.)
+ */
+void Prop_OnCondCloaked(PropifyTFPlayer player, bool bCloaked) {
+	SetEntityAlpha(player, bCloaked? 80 : 255);
+}
+
+/**
+ * Quick hack to prevent the taunt cam from offsetting sniper zoom.
+ */
+void Prop_OnCondZoomed(PropifyTFPlayer player, bool bZoomed) {
+	// Third-person mode according to Propify
+	// TODO this is still jittery because it isn't synced to the scope animation.  fix?
+	if (player.ThirdPerson) {
+		SetVariantInt(bZoomed? 0 : 1);
+		player.AcceptInput("SetForcedTauntCam");
 	}
 }
 
