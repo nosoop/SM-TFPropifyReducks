@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.6.3"
+#define PLUGIN_VERSION "0.6.4"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -17,6 +17,9 @@ public Plugin myinfo = {
     version = PLUGIN_VERSION,
     url = "https://github.com/nosoop"
 };
+
+// See function Prop_OnCondZoomed
+#define MANUAL_UNSCOPE_TIME_THRESHOLD 0.20
 
 // Provide a global prop list for compatibility with original Propify plugin
 PropifyPropList g_PropList;
@@ -30,6 +33,7 @@ public void OnPluginStart() {
 		
 	HookEvent("player_spawn", Event_PlayerSpawn_Post, EventHookMode_Post);
 	HookEvent("player_death", Event_PlayerSpawn_Post, EventHookMode_Post);
+	// TODO add convar and method to drop props as ragdolls?
 	HookEvent("post_inventory_application", Event_PlayerInventoryApplication_Post, EventHookMode_Post);
 	
 	RegAdminCmd("sm_propify2_reloadlist", AdminCmd_ReloadPropList, ADMFLAG_ROOT, "Reloads the prop list.");
@@ -38,8 +42,6 @@ public void OnPluginStart() {
 	g_PropListParser = new KeyValueSectionParser();
 	g_PropListParser.AddCallbackFunction("proplist", INVALID_HANDLE, KeyValueSection_PropList);
 	g_PropListParser.AddCallbackFunction("includes", INVALID_HANDLE, KeyValueSection_Includes);
-	
-	// TODO create command for reloading prop lists
 	
 	// Late loads, as always.
 	for (int i = MaxClients; i > 0; --i) {
@@ -138,15 +140,70 @@ void Prop_OnCondCloaked(PropifyTFPlayer player, bool bCloaked) {
 }
 
 /**
- * Quick hack to prevent the taunt cam from offsetting sniper zoom.
+ * Workaround to prevent the third-person camera from offsetting sniper zoom.
  */
 void Prop_OnCondZoomed(PropifyTFPlayer player, bool bZoomed) {
-	// Third-person mode according to Propify
-	// TODO this is still jittery because it isn't synced to the scope animation.  fix?
+	// Third-person mode according to Propify's internal bool
 	if (player.ThirdPerson) {
+		// If in the process of unscoping
+		if (!bZoomed && !IsFakeClient(player.Index)) {
+			int activeWeapon = GetEntPropEnt(player.Index, Prop_Send, "m_hActiveWeapon"),
+			primaryWeapon = GetPlayerWeaponSlot(player.Index, TFWeaponSlot_Primary);
+			
+			/**
+			 * If m_flRezoomTime is in the future, then that definitely (?) means cl_autorezoom == 1.
+			 * Otherwise, either the player manually unscoped or cl_autorezoom == 0.
+			 * 
+			 * We assume that only primary weapons can use zoom, so m_flRezoomTime *should* exist.
+			 */
+			float flRezoomTime = GetEntPropFloat(primaryWeapon, Prop_Data, "m_flRezoomTime");
+			float flNextPrimaryAttack = GetEntPropFloat(primaryWeapon, Prop_Data, "m_flNextPrimaryAttack");
+			
+			/**
+			 * Quick hack:
+			 * - if the next attack is shorter than ~0.2s, then put them in third person because they either:
+			 *     1. unscoped manually, or
+			 *     2. they ran out of ammo
+			 * - if the next attack takes ~1s then the player is reloading and we'll check it again later
+			 * 
+			 * More accurate way to test this is if we know they're using cl_autoreload, then flRezoomTime < GetGameTime() if manual unscope
+			 * TODO make sure these timings work regardless of client latency
+			 */
+			bool bManualUnscope = flNextPrimaryAttack - GetGameTime() < MANUAL_UNSCOPE_TIME_THRESHOLD;
+		
+			// If unscoped due to firing weapon and currently reloading; 
+			if (activeWeapon == primaryWeapon && !bManualUnscope) {
+				// Automatic rezoom is earlier than next chance of firing -- use that if available.
+				float flCheckTime = flRezoomTime > GetGameTime() ? flRezoomTime : flNextPrimaryAttack;
+				
+				float flTimerLength = (flCheckTime - GetGameTime()) + (GetTickInterval() * 3);
+				CreateTimer(flTimerLength, Timer_CheckPlayerRezoom, GetClientUserId(player.Index), TIMER_FLAG_NO_MAPCHANGE);
+				return;
+			}
+		}
+		
 		SetVariantInt(bZoomed? 0 : 1);
 		player.AcceptInput("SetForcedTauntCam");
 	}
+}
+
+/**
+ * Timer to check if the player has scoped back in after firing.
+ * If not, return them to third-person mode if desired.
+ */
+public Action Timer_CheckPlayerRezoom(Handle timer, any data) {
+	int client = GetClientOfUserId(view_as<int>(data));
+	
+	if (client > 0 && IsClientInGame(client)) {
+		PropifyTFPlayer player = g_proppablePlayers[client];
+		
+		// Check to make sure they want to be in third-person again, just in case they unpropped while reloading
+		if (!TF2_IsPlayerInCondition(client, TFCond_Zoomed) && player.ThirdPerson) {
+			SetVariantInt(1);
+			AcceptEntityInput(client, "SetForcedTauntCam");
+		}
+	}
+	return Plugin_Handled;
 }
 
 /* Do fancy prop loading stuff */
