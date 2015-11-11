@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.6.4"
+#define PLUGIN_VERSION "0.6.5"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -102,6 +102,7 @@ public void TF2_OnConditionAdded(int client, TFCond condition) {
 	PropifyTFPlayer player = g_proppablePlayers[client];
 	if (player.IsPropped) {
 		switch (condition) {
+			case TFCond_Stealthed: { Prop_OnCondStealthed(player, true); }
 			case TFCond_Taunting: { Prop_OnCondTaunting(player, true); }
 			case TFCond_Cloaked: { Prop_OnCondCloaked(player, true); }
 			case TFCond_Zoomed: { Prop_OnCondZoomed(player, true); }
@@ -116,6 +117,7 @@ public void TF2_OnConditionRemoved(int client, TFCond condition) {
 	PropifyTFPlayer player = g_proppablePlayers[client];
 	if (player.IsPropped) {
 		switch (condition) {
+			case TFCond_Stealthed: { Prop_OnCondStealthed(player, false); }
 			case TFCond_Taunting: { Prop_OnCondTaunting(player, false); }
 			case TFCond_Cloaked: { Prop_OnCondCloaked(player, false); }
 			case TFCond_Zoomed: { Prop_OnCondZoomed(player, false); }
@@ -136,7 +138,18 @@ void Prop_OnCondTaunting(PropifyTFPlayer player, bool bTaunting) {
  * (Player is fully invisible to players on the enemy team regardless.)
  */
 void Prop_OnCondCloaked(PropifyTFPlayer player, bool bCloaked) {
-	SetEntityAlpha(player, bCloaked? 80 : 255);
+	// Stealth takes precedence over cloak.
+	bool bStealthed = TF2_IsPlayerInCondition(player.Index, TFCond_Stealthed);
+	SetEntityAlpha(player, bStealthed || bCloaked? 80 : 255);
+}
+
+/**
+ * Visual indication to self / allies that propped player is stealthed (Halloween spell).
+ */
+void Prop_OnCondStealthed(PropifyTFPlayer player, bool bStealthed) {
+	// Ensure alpha remains even if stealth is removed.
+	bool bCloaked = TF2_IsPlayerInCondition(player.Index, TFCond_Cloaked);
+	SetEntityAlpha(player, bStealthed || bCloaked? 80 : 255);
 }
 
 /**
