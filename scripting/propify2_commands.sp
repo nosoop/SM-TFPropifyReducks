@@ -8,7 +8,7 @@
 
 #include <propify2>
 
-#define PLUGIN_VERSION "0.3.1"
+#define PLUGIN_VERSION "0.3.2"
 public Plugin myinfo = {
     name = "[TF2] Propify Commands",
     author = "nosoop",
@@ -17,7 +17,7 @@ public Plugin myinfo = {
     url = "https://github.com/nosoop"
 };
 
-bool g_bPropify2Loaded;
+bool g_bPropify2Loaded, g_bAllLoaded;
 PropifyPropList g_PropList = null;
 
 public void OnPluginStart() {
@@ -69,18 +69,24 @@ public Action ConCmd_PropPlayerWeapon(int iClient, int nArgs) {
  * Checks for the existence of the nosoop-propify2 library.
  */
 public void OnAllPluginsLoaded() {
+	g_bAllLoaded = true;
+	
 	bool bLastState = g_bPropify2Loaded;
 	Propify2LibraryCheck((g_bPropify2Loaded = LibraryExists("nosoop-propify2")) != bLastState);
 }
 
 public void OnLibraryRemoved(const char[] name) {
-	bool bLastState = g_bPropify2Loaded;
-	Propify2LibraryCheck((g_bPropify2Loaded &= !StrEqual(name, "nosoop-propify2")) != bLastState);
+	if (g_bAllLoaded) {
+		bool bLastState = g_bPropify2Loaded;
+		Propify2LibraryCheck((g_bPropify2Loaded &= !StrEqual(name, "nosoop-propify2")) != bLastState);
+	}
 }
 
 public void OnLibraryAdded(const char[] name) {
-	bool bLastState = g_bPropify2Loaded;
-	Propify2LibraryCheck((g_bPropify2Loaded |= StrEqual(name, "nosoop-propify2")) != bLastState);
+	if (g_bAllLoaded) {
+		bool bLastState = g_bPropify2Loaded;
+		Propify2LibraryCheck((g_bPropify2Loaded |= StrEqual(name, "nosoop-propify2")) != bLastState);
+	}
 }
 
 public void Propify2LibraryCheck(bool bHasChanged) {
