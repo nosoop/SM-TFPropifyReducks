@@ -5,24 +5,31 @@
  * For API information, check "include/propify2.inc"
  */
 public APLRes AskPluginLoad2(Handle hMySelf, bool bLate, char[] strError, int iMaxErrors) {
+	if (GetEngineVersion() != Engine_TF2) {
+		strcopy(strError, iMaxErrors, "Plugin only works on Team Fortress 2.");
+		return APLRes_Failure;
+	}
+	
+	g_PropList = new PropifyPropList();
+	
 	RegPluginLibrary("nosoop-propify2");
-
+	
 	CreateNative("Propify2_PropPlayer", Native_PropPlayer);
 	CreateNative("Propify2_UnpropPlayer", Native_UnpropPlayer);
 	CreateNative("Propify2_IsClientProp", Native_IsClientProp);
-
+	
 	CreateNative("Propify2_GetClientPropLock", Native_GetClientPropLock);
 	CreateNative("Propify2_SetClientPropLock", Native_SetClientPropLock);
-
+	
 	CreateNative("Propify2_GetClientThirdPerson", Native_GetClientThirdPerson);
 	CreateNative("Propify2_SetClientThirdPerson", Native_SetClientThirdPerson);
-
+	
 	CreateNative("Propify2_GetClientDisarmedState", Native_GetClientDisarmedState);
-
+	
 	CreateNative("Propify2_GetPropList", Native_GetPropList);
-
+	
 	// TODO implement natives for parser callbacks
-
+	
 	return APLRes_Success;
 }
 

@@ -9,7 +9,7 @@
 #include "propify2/methodmaps.sp"
 #include "propify2/dirtykvparser.sp"
 
-#define PLUGIN_VERSION "0.6.5"
+#define PLUGIN_VERSION "0.6.6"
 public Plugin myinfo = {
     name = "[TF2] Propify Re-ducks",
     author = "nosoop",
@@ -28,9 +28,8 @@ PropifyTFPlayer g_proppablePlayers[MAXPLAYERS+1];
 KeyValueSectionParser g_PropListParser;
 
 public void OnPluginStart() {
-	g_PropList = new PropifyPropList();
 	g_PropConfigs = new ArrayList(PLATFORM_MAX_PATH);
-		
+	
 	HookEvent("player_spawn", Event_PlayerSpawn_Post, EventHookMode_Post);
 	HookEvent("player_death", Event_PlayerSpawn_Post, EventHookMode_Post);
 	// TODO add convar and method to drop props as ragdolls?
